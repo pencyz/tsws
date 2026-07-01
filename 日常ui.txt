@@ -390,10 +390,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 @keyframes embryo{0%,100%{r:7;filter:drop-shadow(0 0 4px var(--vermilion-glow))}50%{r:9;filter:drop-shadow(0 0 12px var(--vermilion-l))}}
 .wx-womb-embryo-halo{fill:none;stroke:var(--vermilion-l);stroke-width:1;opacity:.5;animation:halo 2.6s ease-in-out infinite}
 @keyframes halo{0%{r:9;opacity:.6}100%{r:22;opacity:0}}
-.wx-womb-baby{fill:hsla(6,55%,40%,0.55);stroke:var(--vermilion-l);stroke-width:1.2;filter:drop-shadow(0 0 8px var(--vermilion-glow));animation:babyBreathe 4s ease-in-out infinite;transform-origin:120px 150px}
+.wx-womb-baby{fill:hsla(26,58%,66%,0.62);stroke:hsl(22,52%,54%);stroke-width:1.4;stroke-linejoin:round;filter:drop-shadow(0 0 7px hsla(26,60%,45%,0.28))}
+.wx-womb-svg .wx-womb-baby-grp{animation:babyBreathe 4s ease-in-out infinite;transform-origin:120px 150px}
 @keyframes babyBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
 .wx-womb-baby-eye{fill:var(--ink-deep);opacity:.75}
-.wx-womb-baby-spine{fill:none;stroke:hsla(6,72%,30%,0.55);stroke-width:1.3;stroke-linecap:round}
+.wx-womb-baby-face{fill:none;stroke:hsla(18,50%,28%,0.9);stroke-width:1.6;stroke-linecap:round}
+.wx-womb-baby-spine{fill:none;stroke:hsla(20,45%,34%,0.75);stroke-width:1.4;stroke-linecap:round}
+.wx-womb-svg .wx-womb-liq{transform-origin:120px 150px;animation:wombLiqSlosh 4.2s ease-in-out infinite}
+.wx-womb-svg .wx-womb-liq-body{fill:hsla(198,65%,58%,0.30)}
+.wx-womb-svg .wx-womb-liq-surf{fill:hsla(198,70%,66%,0.40);stroke:hsl(198,72%,72%);stroke-width:1.3;filter:drop-shadow(0 0 5px hsla(198,80%,66%,0.40));animation:wombLiqFlow 3s linear infinite}
+@keyframes wombLiqSlosh{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes wombLiqFlow{0%{transform:translateX(0)}100%{transform:translateX(-24px)}}
 .wx-womb-pool{margin-top:6px;border-top:1px solid var(--gold-line);padding-top:10px}
 .wx-womb-pool-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .wx-womb-pool-title{font-size:11px;color:var(--text-soft);letter-spacing:2px}
@@ -3365,17 +3372,19 @@ function buildCharCard(charKey, char, isPlayer) {
 // ── 子宫面板（生理周期与孕育系统）──
 // 隐私铁则：本面板只读取 周期天数/周期长度/批次/公开怀孕/孕天；
 //           绝不读取 true_ov 与 隐藏怀孕，确保暗孕不在 UI 泄露。
+var _wombUid=0;
 function _wombSvg(opts){
-  // opts: {menses, danger, embryo:'none'|'dot'|'baby', motes:int}
-  var big = opts.embryo==='baby';   // 孕晚期：胀大子宫
+  // opts: {menses, danger, liquid:0-6, stage:'none'|'dot'|'baby1'|'baby2'|'baby3'}
+  var stage = opts.stage||'none';
+  var big = (stage==='baby2'||stage==='baby3');   // 孕中晚期：胀大子宫
   var cls='wx-womb-svg'+(opts.menses?' is-menses':'')+(opts.danger?' is-danger':'')+(big?' is-big':'');
   var P = big ? {
-    cavity:'M120 88 C158 92 162 142 138 168 C130 178 110 178 102 168 C78 142 82 92 120 88 Z',
-    body:'M120 84 C162 88 166 144 142 170 C134 180 132 188 132 194 L108 194 C108 188 106 180 98 170 C74 144 78 88 120 84 Z',
-    cervix:'M108 194 C108 200 107 205 110 210 M132 194 C132 200 133 205 130 210',
-    tubeL:'M102 96 C82 84 64 78 48 82 C38 84 32 76 38 68', tubeR:'M138 96 C158 84 176 78 192 82 C202 84 208 76 202 68',
-    fimL:'M38 68 l-6 -5 M42 64 l-2 -8 M46 66 l3 -7', fimR:'M202 68 l6 -5 M198 64 l2 -8 M194 66 l-3 -7',
-    ovL:[46,84], ovR:[194,84], lining:''
+    cavity:'M120 86 C160 90 164 142 138 170 C130 180 110 180 102 170 C76 142 80 90 120 86 Z',
+    body:'M120 82 C164 86 168 146 142 172 C134 182 132 190 132 196 L108 196 C108 190 106 182 98 172 C72 146 76 82 120 82 Z',
+    cervix:'M108 196 C108 202 107 207 110 212 M132 196 C132 202 133 207 130 212',
+    tubeL:'M102 94 C82 82 64 76 48 80 C38 82 32 74 38 66', tubeR:'M138 94 C158 82 176 76 192 80 C202 82 208 74 202 66',
+    fimL:'M38 66 l-6 -5 M42 62 l-2 -8 M46 64 l3 -7', fimR:'M202 66 l6 -5 M198 62 l2 -8 M194 64 l-3 -7',
+    ovL:[46,82], ovR:[194,82], lining:''
   } : {
     cavity:'M120 96 C150 100 150 140 132 162 C126 170 114 170 108 162 C90 140 90 100 120 96 Z',
     body:'M120 92 C156 96 158 138 137 164 C131 172 130 178 130 184 L110 184 C110 178 109 172 103 164 C82 138 84 96 120 92 Z',
@@ -3384,21 +3393,47 @@ function _wombSvg(opts){
     fimL:'M40 70 l-6 -5 M44 66 l-2 -8 M48 68 l3 -7', fimR:'M200 70 l6 -5 M196 66 l2 -8 M192 68 l-3 -7',
     ovL:[48,86], ovR:[192,86], lining:'M120 104 C144 108 144 138 130 158 C125 165 115 165 110 158 C96 138 96 108 120 104 Z'
   };
-  var inner='';
-  if(opts.embryo==='dot'){
-    inner='<circle class="wx-womb-embryo-halo" cx="120" cy="150" r="9"/><circle class="wx-womb-embryo" cx="120" cy="150" r="7"/>';
-  } else if(opts.embryo==='baby'){
-    inner='<path class="wx-womb-baby" d="M110 120 C130 120 142 138 141 155 C140 170 130 178 117 178 C123 170 120 160 110 159 C117 155 116 146 109 145 C101 144 98 150 98 140 C98 129 101 121 110 120 Z"/><circle class="wx-womb-baby-eye" cx="120" cy="133" r="2.6"/><path class="wx-womb-baby-spine" d="M126 127 C134 137 134 152 128 164"/>';
+  // ── 精液液体池（0-6 级；仅非孕期普通子宫显示，液面随量升高）──
+  var liquid='', lv=Math.max(0,Math.min(6,opts.liquid||0));
+  if(lv>0 && !big){
+    var uid='wxwc'+(_wombUid++);
+    var ft=(170-(lv/6)*66).toFixed(1);   // 液面 y：170(底) → 104(近满)
+    // 加宽波浪，便于「晃动(倾斜)+流动(平移)」两层动画而不穿帮
+    var wave='M 44 182 L 44 '+ft+' q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 L 196 182 Z';
+    liquid='<clipPath id="'+uid+'"><path d="'+P.cavity+'"/></clipPath>'+
+      '<g clip-path="url(#'+uid+')"><g class="wx-womb-liq"><rect class="wx-womb-liq-body" x="40" y="'+ft+'" width="160" height="120"/>'+
+      '<path class="wx-womb-liq-surf" d="'+wave+'"/></g></g>';
   }
-  var motes='', n=Math.min(opts.motes||0,6);
-  for(var i=0;i<n;i++){ var mx=112+(i%3)*8+(i>2?2:0), my=(big?188:178)+Math.floor(i/3)*7; motes+='<circle cx="'+mx+'" cy="'+my+'" r="2.1" fill="hsl(140,40%,68%)" opacity="0.7"/>'; }
-  return '<svg class="'+cls+'" viewBox="0 0 240 230" xmlns="http://www.w3.org/2000/svg">'+
-    '<path class="cavity" d="'+P.cavity+'"/><path class="organ" d="'+P.body+'"/><path class="organ" d="'+P.cervix+'"/>'+
+  // ── 孕育：红点 / 分期胎儿（早·中·晚，逐期放大增肢）──
+  var inner='';
+  if(stage==='dot'){
+    inner='<circle class="wx-womb-embryo-halo" cx="120" cy="150" r="9"/><circle class="wx-womb-embryo" cx="120" cy="150" r="7"/>';
+  } else if(stage==='baby1'){        // 早期：大头小蜷身，闭眼安睡（普通宫）
+    inner='<g class="wx-womb-baby-grp"><circle class="wx-womb-baby" cx="119" cy="124" r="12"/>'+
+      '<path class="wx-womb-baby" d="M119 135 C129 135 135 144 133 154 C132 161 126 165 120 163 C123 159 120 152 113 153 C117 148 116 142 111 142 C113 138 114 135 119 135 Z"/>'+
+      '<path class="wx-womb-baby-face" d="M112 122 q4 4 9 0"/></g>';
+  } else if(stage==='baby2'){        // 中期：头+蜷身+单腿，闭眼（胀大宫）
+    inner='<g class="wx-womb-baby-grp"><circle class="wx-womb-baby" cx="119" cy="126" r="14"/>'+
+      '<path class="wx-womb-baby" d="M119 141 C133 141 141 153 139 166 C138 175 131 179 123 177 C127 172 123 165 114 166 C119 160 117 152 108 152 C112 145 113 141 119 141 Z"/>'+
+      '<path class="wx-womb-baby-spine" d="M117 163 C112 167 111 174 115 178"/>'+
+      '<path class="wx-womb-baby-face" d="M112 124 q5 4 10 0"/></g>';
+  } else if(stage==='baby3'){        // 晚期：头朝下(临产顶位)，圆头胖身+双腿+小手，闭眼安睡（胀大宫）
+    // 外层做 180° 旋转+上移，使头部朝下卡在宫颈上方；内层保留呼吸动画
+    inner='<g transform="rotate(180 120 150) translate(0 -8)"><g class="wx-womb-baby-grp"><circle class="wx-womb-baby" cx="119" cy="124" r="16"/>'+
+      '<path class="wx-womb-baby" d="M119 141 C135 141 145 154 143 169 C142 179 133 184 124 182 C128 176 123 168 113 169 C119 162 117 153 107 153 C112 145 112 141 119 141 Z"/>'+
+      '<path class="wx-womb-baby-spine" d="M116 166 C111 170 110 178 114 182"/>'+
+      '<path class="wx-womb-baby-spine" d="M129 164 C135 168 135 177 130 180"/>'+
+      '<path class="wx-womb-baby-spine" d="M106 150 C101 152 99 158 103 162"/>'+
+      '<path class="wx-womb-baby-face" d="M111 122 q5 4 10 0"/></g></g>';
+  }
+  return '<svg class="'+cls+'" viewBox="0 0 240 '+(big?226:230)+'" xmlns="http://www.w3.org/2000/svg">'+
+    '<path class="cavity" d="'+P.cavity+'"/>'+liquid+
+    '<path class="organ" d="'+P.body+'"/><path class="organ" d="'+P.cervix+'"/>'+
     '<path class="organ" d="'+P.tubeL+'"/><path class="organ" d="'+P.tubeR+'"/>'+
     '<path class="organ-soft" d="'+P.fimL+'"/><path class="organ-soft" d="'+P.fimR+'"/>'+
     '<ellipse class="ovary'+(opts.danger?' active':'')+'" cx="'+P.ovL[0]+'" cy="'+P.ovL[1]+'" rx="12" ry="8"/>'+
     '<ellipse class="ovary'+(opts.danger?' active':'')+'" cx="'+P.ovR[0]+'" cy="'+P.ovR[1]+'" rx="12" ry="8"/>'+
-    (P.lining?'<path class="lining" d="'+P.lining+'"/>':'')+motes+inner+'</svg>';
+    (P.lining?'<path class="lining" d="'+P.lining+'"/>':'')+inner+'</svg>';
 }
 function buildWombPanel(charKey, char){
   var w=(char&&char.子宫内状态)||{};
@@ -3425,13 +3460,23 @@ function buildWombPanel(charKey, char){
   html+='<div class="wx-womb-phase '+pc+'"><span class="wx-womb-phase-icon">'+pi+'</span>'+
     '<div class="wx-womb-phase-main"><div class="wx-womb-phase-label">'+pl+'</div>'+
     '<div class="wx-womb-phase-sub">'+sub+'</div>'+bar+'</div></div>';
-  var embryo = pubPreg ? (pregDays>56?'baby':'dot') : 'none';
+  // 精液量 → 液体池等级（0-6）：按各批活性之和折算
+  var vol=batches.reduce(function(s,b){return s+Math.max(0,Math.min(100,+b.活性||0))/100;},0);
+  var liqLevel = vol<=0 ? 0 : Math.min(6, Math.max(1, Math.round(vol)));
+  // 孕育分期（仅公开怀孕；仅依据 孕天）：红点→早→中→晚
+  var stage='none';
+  if(pubPreg){
+    if(pregDays<=56) stage='dot';
+    else if(pregDays<=112) stage='baby1';
+    else if(pregDays<=196) stage='baby2';
+    else stage='baby3';
+  }
   html+='<div class="wx-womb-stage">'+_wombSvg({
-    menses:(!pubPreg&&day<=5), danger:(!pubPreg&&day>=14&&day<=15), embryo:embryo, motes:batches.length
+    menses:(!pubPreg&&day<=5), danger:(!pubPreg&&day>=14&&day<=15), liquid:liqLevel, stage:stage
   })+'</div>';
   html+='<div class="wx-womb-pool"><div class="wx-womb-pool-head">'+
     '<span class="wx-womb-pool-title">子宫内 · 精液池</span>'+
-    '<span class="wx-womb-pool-count">'+(batches.length?('共 '+batches.length+' 道'):'')+'</span></div>';
+    '<span class="wx-womb-pool-count">'+(batches.length?('精液量 Lv.'+liqLevel+'/6 · 共 '+batches.length+' 道'):'')+'</span></div>';
   if(batches.length){
     html+='<div class="wx-womb-drops">';
     batches.forEach(function(b){
