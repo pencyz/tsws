@@ -398,9 +398,10 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .wx-womb-baby-spine{fill:none;stroke:hsla(20,45%,34%,0.75);stroke-width:1.4;stroke-linecap:round}
 .wx-womb-svg .wx-womb-liq{transform-origin:120px 150px;animation:wombLiqSlosh 4.2s ease-in-out infinite}
 .wx-womb-svg .wx-womb-liq-body{fill:hsla(198,65%,58%,0.30)}
-.wx-womb-svg .wx-womb-liq-surf{fill:hsla(198,70%,66%,0.40);stroke:hsl(198,72%,72%);stroke-width:1.3;filter:drop-shadow(0 0 5px hsla(198,80%,66%,0.40));animation:wombLiqFlow 3s linear infinite}
+.wx-womb-svg .wx-womb-liq-surf{fill:hsla(198,70%,66%,0.40);stroke:hsl(198,72%,72%);stroke-width:1.3;filter:drop-shadow(0 0 5px hsla(198,80%,66%,0.40));animation:wombLiqFlow 4s linear infinite}
 @keyframes wombLiqSlosh{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-@keyframes wombLiqFlow{0%{transform:translateX(0)}100%{transform:translateX(-24px)}}
+/* 平移正好一个波长(36px)，与首帧重合 → 无缝循环 */
+@keyframes wombLiqFlow{from{transform:translateX(0)}to{transform:translateX(-36px)}}
 .wx-womb-pool{margin-top:6px;border-top:1px solid var(--gold-line);padding-top:10px}
 .wx-womb-pool-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .wx-womb-pool-title{font-size:11px;color:var(--text-soft);letter-spacing:2px}
@@ -3398,10 +3399,10 @@ function _wombSvg(opts){
   if(lv>0 && !big){
     var uid='wxwc'+(_wombUid++);
     var ft=(170-(lv/6)*66).toFixed(1);   // 液面 y：170(底) → 104(近满)
-    // 加宽波浪，便于「晃动(倾斜)+流动(平移)」两层动画而不穿帮
-    var wave='M 44 182 L 44 '+ft+' q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 L 196 182 Z';
+    // 波长 36px 的连续波浪，两侧留足余量；配合平移「正好一个波长」实现无缝循环（首尾重合，不跳帧）
+    var wave='M 0 182 L 0 '+ft+' q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 q 9 -5 18 0 q 9 5 18 0 L 240 182 Z';
     liquid='<clipPath id="'+uid+'"><path d="'+P.cavity+'"/></clipPath>'+
-      '<g clip-path="url(#'+uid+')"><g class="wx-womb-liq"><rect class="wx-womb-liq-body" x="40" y="'+ft+'" width="160" height="120"/>'+
+      '<g clip-path="url(#'+uid+')"><g class="wx-womb-liq"><rect class="wx-womb-liq-body" x="0" y="'+ft+'" width="240" height="140"/>'+
       '<path class="wx-womb-liq-surf" d="'+wave+'"/></g></g>';
   }
   // ── 孕育：红点 / 分期胎儿（早·中·晚，逐期放大增肢）──
